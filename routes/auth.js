@@ -49,7 +49,49 @@ router.post('/signup', (req, res) => {
         res.redirect("/");
       });
     });
-
 });
+
+
+router.get('/login', (req, res) => {
+  res.render('auth/login', { title: 'Login Page' });
+});
+
+
+router.post("/login", (req, res, next) => {
+  const {username, password} = req.body;
+
+  if (username === "" || password === "") {
+    res.render("auth/login", {
+      errorMessage: "Indicate a username and a password to sign up"
+    });
+    return;
+  }
+
+  User.findOne({ "username": username }, (err, user) => {
+      if (err || !user) {
+        res.render("auth/login", {
+          errorMessage: "The username doesn't exist"
+        });
+        return;
+      }
+      if (bcrypt.compareSync(password, user.password)) {
+        // Save the login in the session!
+        req.session.currentUser = user;
+        res.redirect("/");
+      } else {
+        res.render("auth/login", {
+          errorMessage: "Incorrect password"
+        });
+      }
+  });
+});
+
+router.get('/logout', (req,res) => {
+  req.session.destroy((err) => {
+    // cannot access session here
+    res.redirect("/login");
+  });
+});
+
 
 module.exports = router;

@@ -1,2 +1,12 @@
   <h2>Bienvenido a la home</h2>
+  <a href="/login">Login</a>
   <a href="/signup">Signup here!</a>
+
+  <% if(user){ %>
+  <div style="border: 3px dashed blue">
+    <h3>ESTO ES UN SECRETO SOLO APTOP PARA USUARIOS REGISTRADOS como:</h3>
+    <a href="/rutasecreta">RUTA SECRETA</a>
+    <h2 style="color:red"><%= user.username %></h2>
+    <a href="/logout">Logout</a>
+  </div>
+  <% } %>

@@ -8,6 +8,9 @@ const mongoose = require('mongoose');
 const debug = require('debug')('basic-auth:'+ path.basename(__filename));
 const expressLayouts = require('express-ejs-layouts');
 const authRoutes = require('./routes/auth');
+const session = require("express-session");
+const MongoStore = require("connect-mongo")(session);
+const secretoRoutes = require('./routes/secreto');
 
 const app = express();
 
@@ -26,14 +29,27 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+app.use(session({
+  secret: "basic-auth-secret",
+  cookie: { maxAge: 60*60*24*2 }, // 2 days
+  store: new MongoStore({
+    mongooseConnection: mongoose.connection,
+    ttl: 24 * 60 * 60 // 1 day
+  })
+}));
+
 app.use(express.static(path.join(__dirname, 'public')));
+
 
 app.use((req,res,next) =>{
   res.locals.title = "TITULO POR DEFECTO";
+  res.locals.user = req.session.currentUser;
   next();
 })
 
 app.use('/', authRoutes);
+app.use('/rutasecreta', secretoRoutes);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
